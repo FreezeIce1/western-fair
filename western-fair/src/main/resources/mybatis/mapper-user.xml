@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.atcrowdfunding.dao.UserDao" >
+	<select id="pageQueryData" resultType="com.atcrowdfunding.bean.User">
+		select * from t_user
+		<where>
+			<if test="queryText != null">
+				 and loginacct like concat('%',#{queryText},'%')
+			</if>
+		</where>
+		 order by createtime desc
+		 limit #{start},#{size}
+	</select>
+	
+	<select id="pageQueryCount" resultType="int">
+		select count(*)
+		from t_user
+		<where>
+			<if test="queryText != null">
+				 and loginacct like concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insertUser" parameterType="com.atcrowdfunding.bean.User">
+		insert into t_user(
+			loginacct,username,userpswd,email,createtime,sex,phone
+		) values (
+			#{loginacct},#{username},#{userpswd},#{email},#{createtime},#{sex},#{phone}
+		)
+	</insert>
+	
+	
+	<update id="updateUser" parameterType="com.atcrowdfunding.bean.User">
+		update t_user
+		set loginacct = #{loginacct},username = #{username},email = #{email},sex = #{sex},phone = #{phone}
+		where id = #{id}
+	</update>
+	
+	<delete id="deleteUserById" parameterType="int">
+		delete from t_user where id = #{id}
+	</delete>
+	
+	<delete id="deleteUsers">
+		delete from t_user where id in
+		<foreach collection="userids" item="userid" open="(" close=")" separator=",">
+			#{userid}
+		</foreach>
+	</delete>
+	
+	<!-- 在用户角色关系表中添加相应数据 -->
+	<insert id="insertUserRoles" parameterType="java.util.Map">
+		insert into t_user_role (userid,roleid) values
+		<foreach collection="roleids" item="roleid" separator=",">
+			(#{userid},#{roleid})
+		</foreach>
+	</insert>
+	
+	<!-- 在用户角色关系表中删除相应数据 -->
+	<delete id="deleteUsersRoles" parameterType="java.util.Map">
+		delete from t_user_role where userid = #{userid} and roleid in
+		<foreach collection="roleids" item="roleid" open="(" close=")" separator=",">
+			#{roleid}
+		</foreach>
+	</delete>
+	
+	<!-- 根据用户id在用户角色关系表中查询已经为该用户分配的角色id -->
+	<select id="queryAssignRoleIdsByUserId" parameterType="int" resultType="int">
+		select roleid from t_user_role where userid = #{userid}
+	</select>
+	
+	
+	<update id="updateUserOwnInfo" parameterType="com.atcrowdfunding.bean.User">
+		update t_user
+		<set>
+			<if test="username != null and  cust_name != ''">
+				cust_name=#{cust_name} ,
+			</if>
+			
+		</set>
+		where id = #{id}
+	</update>
+	
+	<update id="updateUserLoginInfo" parameterType="com.atcrowdfunding.bean.User">
+		update t_user
+		set lastLogin=#{lastLogin},loginCount=#{loginCount}
+		where id=#{id}
+	</update>
+	
+	<select id="queryUserByLoginacct" parameterType="string" resultType="com.atcrowdfunding.bean.User">
+		select * from t_user
+		where loginacct = #{loginacct}
+	</select>
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.atcrowdfunding.dao.PartnerTypeDao" >
+
+<select id="pageQueryData" resultType="com.atcrowdfunding.bean.PartnerType">
+		select * from xbh_partnerType
+		<where>
+			<if test="queryText != null">
+				 and typename like concat('%',#{queryText},'%')
+			</if>
+		</where>
+		 order by typeaddtime desc
+		 limit #{start},#{size}
+	</select>
+<select id="pageQueryCount" resultType="int">
+		select count(*)
+		from xbh_partnerType
+		<where>
+			<if test="queryText != null">
+				 and typename like concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insertPartnerType" parameterType="com.atcrowdfunding.bean.PartnerType">
+		insert into xbh_partnerType(typename,typeaddtime
+		) values (
+			#{typename},#{typeaddtime}
+		)
+	</insert>
+	
+	<update id="updatePartnerType" parameterType="com.atcrowdfunding.bean.PartnerType">
+		update xbh_partnerType
+		set typename = #{typename},typeupdatetime = #{typeupdatetime}
+		where typeid = #{typeid}
+	</update>
+	
+	<delete id="deletePartnerTypeById" parameterType="int">
+		delete from xbh_partnerType where typeid = #{typeid}
+	</delete>
+	
+	<delete id="deletePartnerTypes">
+		delete from xbh_partnerType where typeid in
+		<foreach collection="partnerTypeids" item="partnerTypeid" open="(" close=")" separator=",">
+			#{partnerTypeid}
+		</foreach>
+	</delete>
+	
+	<select id="findPartnerBytype" resultType="com.atcrowdfunding.bean.Partner">
+		select * from xbh_partner,xbh_partnerType where type=typeid and typeid=#{typeid}
+	
+	</select>
+</mapper>

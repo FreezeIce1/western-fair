@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.atcrowdfunding.dao.NewsDao">
+	<select id="pageQueryData" parameterType="map"	resultMap="NewsMap">
+		select 
+			newsid,
+			title,
+			source,
+			author,
+			xbh_newsType.name,
+			top,
+			createtime,
+			updatetime 
+		from 
+		xbh_news,xbh_newsType
+		<where>
+			xbh_news.type=xbh_newsType.id
+            <if test="queryText != null">
+            and title like concat('%', #{queryText}, '%')
+            </if>
+            <if test="newsType != null and newsType !=''">
+            and type = #{newsType}
+            </if>
+        </where>
+         order by top desc,updatetime desc
+        limit #{start}, #{size}
+	</select>
+	
+	<resultMap type="com.atcrowdfunding.bean.News" id="NewsMap">
+		<id column="newsid" property="newsid"/>
+		<result column="title" property="title"/>
+		<result column="source" property="source"/>
+		<result column="author" property="author"/>
+		<result column="top" property="top"/>
+		<result column="createtime" property="createtime"/>
+		<result column="updatetime" property="updatetime"/>
+		<association property="newsType" javaType="com.atcrowdfunding.bean.NewsType">
+			<result column="name" property="name"/>
+		</association>
+	</resultMap>
+	
+	<select id="pageQueryCount" resultType="int">
+		select
+			count(*)
+		from
+			xbh_news
+		<where>
+			<if test="queryText != null">
+				and title like concat('%', #{queryText}, '%')
+			</if>
+			<if test="newsType != null and newsType !=''">
+            and type = #{newsType}
+            </if>
+		</where>
+	</select>
+	
+	<select id="findNews" parameterType="int" resultType="com.atcrowdfunding.bean.News">
+		select 
+			* 
+		from 
+			xbh_news
+		where 
+			newsid = #{newsid}
+	</select>
+	
+	<select id="findNewsType" resultType="com.atcrowdfunding.bean.NewsType">
+		select
+			* 
+		from 
+			xbh_newsType
+	</select>
+	
+	
+	<insert id="insertNews" parameterType="com.atcrowdfunding.bean.News">
+	insert into xbh_news(
+		title,
+		content,
+		source,
+		author,
+		type,
+		top,
+		createtime,
+		updatetime
+	)values(
+		#{title},
+		#{content},
+		#{source},
+		#{author},
+		#{type},
+		#{top},
+		#{createtime},
+		#{updatetime}
+	)
+	</insert>
+	
+	<update id="updateNews" parameterType="com.atcrowdfunding.bean.News">
+		update xbh_news
+		set 
+			title=#{title},
+			content=#{content},
+			source=#{source},
+			author=#{author},
+			type=#{type},
+			top=#{top},
+			updatetime=#{updatetime}
+		where 
+			newsid=#{newsid}
+	</update>
+	
+	<delete id="deleteNews" parameterType="int">
+		delete from xbh_news
+		where
+			newsid = #{newsid}
+	</delete>
+	
+	<delete id="deleteNewsList">
+		delete from xbh_news where newsid in
+		<foreach collection="newsid" item="newsid" open="(" close=")" separator=",">
+			#{newsid}
+		</foreach>
+	</delete>
+	
+	<select id="findTopNews" parameterType="int" resultType="com.atcrowdfunding.bean.News">
+		select * from xbh_news where top = #{top}
+	</select>
+	
+	<!-- 用于首页新闻推送 start-->
+	<select id="findLastedNews" parameterType="map"	resultMap="LastedNewsMap">
+		select 
+			newsid,
+			title,
+			xbh_newsType.name,
+			createtime,
+			updatetime 
+		from 
+		xbh_news,xbh_newsType
+		where 
+		xbh_news.type=xbh_newsType.id
+		and top=0
+         order by updatetime desc
+        limit 2
+	</select>
+	
+	<resultMap type="com.atcrowdfunding.bean.News" id="LastedNewsMap">
+		<id column="newsid" property="newsid"/>
+		<result column="title" property="title"/>
+		<result column="createtime" property="createtime"/>
+		<result column="updatetime" property="updatetime"/>
+		<association property="newsType" javaType="com.atcrowdfunding.bean.NewsType">
+			<result column="name" property="name"/>
+		</association>
+	</resultMap>
+	
+	<!-- 首页新闻推送end -->
+	
+	<!-- 查找首页新闻的id -->
+	<select id="findNewsWhereTop" resultType="int">
+		select 
+			newsid 
+		from 
+			xbh_news
+		where
+			top = 1
+	</select>
+	
+	<!-- 设置新首页新闻后将原来的首页新闻top属性置零 -->
+	<update id="cancelTop" parameterType="int">
+		update xbh_news
+		set 
+			top=0
+		where 
+			newsid=#{newsid}
+	</update>
+	
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.atcrowdfunding.dao.LinkDao">
+   <select id="pageQueryData" resultType="com.atcrowdfunding.bean.Link">
+		select * from xbh_link
+		<where>
+			<if test="queryText != null">
+				 and name like concat('%',#{queryText},'%')
+			</if>
+		</where>
+		 
+		 limit #{start},#{size}
+	</select>
+	
+	<select id="pageQueryCount" resultType="int">
+		select count(*)
+		from xbh_link
+		<where>
+			<if test="queryText != null">
+				 and name like concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insertLink" parameterType="com.atcrowdfunding.bean.Link">
+		insert into xbh_link(
+			name,url,addtime,updatetime
+		) values (
+			#{name},#{url},#{addtime},#{updatetime}
+		)
+	</insert>
+	
+	<update id="updateLink" parameterType="com.atcrowdfunding.bean.Link">
+	    update xbh_link
+		set name = #{name},url = #{url},updatetime = #{updatetime}
+		where id = #{id}
+	</update>
+	
+	<delete id="deleteLinkById" parameterType="int">
+		delete from xbh_link where id = #{id}
+	</delete>
+	
+	<delete id="deleteLinks">
+		delete from xbh_link where id in
+		<foreach collection="linkids" item="linkid" open="(" close=")" separator=",">
+			#{linkid}
+		</foreach>
+	</delete>
+</mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1">
+	<context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath*:spring/spring-*.xml</param-value>
+    </context-param>
+    <!-- 
+    	ContextLoaderListener继承了ServletContextListener监听接口
+    	监听当代表整个web应用的ServletContext对象被创建的时候，加载Spring的核心配置文件 初始化spring的环境
+    	采用这种方式的原因是确保spring核心配置文件有且只被加载一次
+     -->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    
+    <!-- 配置Spring提供的统一解决乱码的过滤器   但此过滤器只能解决post提交的乱码
+    	get提交方式的乱码只能通过修改tomcat配置来进行解决-->
+    <filter>
+    	<filter-name>encoding</filter-name>
+    	<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    	<!-- 初始化参数设置编码方式 -->
+    	<init-param>
+    		<param-name>encoding</param-name>
+    		<param-value>UTF-8</param-value>
+    	</init-param>
+    	<init-param>
+    		<param-name>forceEncoding</param-name>
+    		<param-value>true</param-value>
+    	</init-param>
+    </filter>
+    
+    <filter-mapping>
+    	<filter-name>encoding</filter-name>
+    	<!-- 表示请求一旦被名为springmvc的servlet拦截之后，就会执行对应的filter
+    	 此处就是执行Spring提供的乱码过滤器   这里就是将乱码过滤器和spring的核心servlet关联在一起-->
+    	<servlet-name>springmvc</servlet-name>
+    </filter-mapping>
+    
+    <!-- 配置SpringMvc核心的Servlet -->
+     <servlet>
+        <servlet-name>springmvc</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!-- 表示初始化参数 -->
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:spring/springmvc-context.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>springmvc</servlet-name>
+        <!-- 拦截所有请求  即所有的请求都会进入SpringMVC的核心Servlet中 
+        	/匹配所有请求  然后根据servlet-name是springmvc找到对应的servlet-class，
+        	即spring的核心servlet  然后会执行spring的核心servlet 同时因为设置初始化参数 ，又会加载
+        	spring的核心配置文件，进而初始化了Spring的环境 -->
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+</web-app>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.atcrowdfunding.dao.PartnerDao" >
+	<resultMap type="com.atcrowdfunding.bean.Partner" id="PartnersMap">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="image" property="image"/>
+		<result column="url" property="url" />
+		<result column="addtime" property="addtime"/>
+		<result column="updatetime" property="updatetime"/>
+		<!-- 指定联合的javabean对象 -->
+		<association property="partnerType" javaType="com.atcrowdfunding.bean.PartnerType">
+			<result column="typename" property="typename"/>
+		</association>
+	</resultMap>
+<select id="pageQueryData" resultMap="PartnersMap">
+		select 
+			id,name,image,url,addtime,updatetime, xbh_partnerType.typename
+		 from xbh_partner ,xbh_partnerType 
+		<where>
+			xbh_partner.type=xbh_partnerType.typeid
+			<if test="queryText != null">
+				 and name like concat('%',#{queryText},'%')
+			</if>
+		</where>
+		 order by addtime desc
+		 limit #{start},#{size}
+	</select>
+<select id="pageQueryCount" resultType="int">
+		select count(*)
+		from xbh_partner
+		<where>
+			<if test="queryText != null">
+				 and name like concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insertPartner" parameterType="com.atcrowdfunding.bean.Partner">
+		insert into xbh_partner(name,image,url,addtime,type
+		) values (
+			#{name},#{image},#{url},#{addtime},#{type}
+		)
+	</insert>
+	
+	<update id="updatePartner" parameterType="com.atcrowdfunding.bean.Partner">
+		update xbh_partner
+		set name = #{name},image = #{image},url = #{url},updatetime = #{updatetime},type = #{type}
+		where id = #{id}
+	</update>
+	
+	<delete id="deletePartnerById" parameterType="int">
+		delete from xbh_partner where id = #{id}
+	</delete>
+	
+	<delete id="deletePartners">
+		delete from xbh_partner where id in
+		<foreach collection="partnerids" item="partnerid" open="(" close=")" separator=",">
+			#{partnerid}
+		</foreach>
+	</delete>
+	
+	<select id="findPartnerType" resultType="com.atcrowdfunding.bean.PartnerType">
+		select
+			* 
+		from 
+			xbh_partnerType
+	</select>
+</mapper>

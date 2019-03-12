@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.atcrowdfunding.dao.NewsTypeDao">
+
+	<select id="findNewsType" resultType="com.atcrowdfunding.bean.NewsType">
+		select
+			* 
+		from 
+			xbh_newsType
+	</select>
+
+	<select id="pageQueryData" resultType="com.atcrowdfunding.bean.NewsType">
+		select * from xbh_newsType
+		<where>
+			<if test="queryText != null">
+				 and name like concat('%',#{queryText},'%')
+			</if>
+		</where>
+		 order by addtime desc
+		 limit #{start},#{size}
+	</select>
+	
+	<select id="pageQueryCount" resultType="int">
+		select count(*)
+		from xbh_newsType
+		<where>
+			<if test="queryText != null">
+				 and name like concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="findNewsTypeById" resultType="com.atcrowdfunding.bean.NewsType">
+		select * 
+		from 
+			xbh_newsType
+		where
+			id = #{id}		
+	</select>
+	
+	<insert id="insertNewsType" parameterType="com.atcrowdfunding.bean.NewsType">
+	insert into xbh_newsType(
+		name,
+		addtime
+	)values(
+		#{name},
+		#{addtime}
+	)
+	</insert>
+	
+	
+	<update id="updateNewsType" parameterType="com.atcrowdfunding.bean.NewsType">
+		update xbh_newsType
+		set 
+			name=#{name},
+			addtime=#{addtime}
+		where 
+			id=#{id}
+	</update>
+	
+	<delete id="deleteNewsType" parameterType="int">
+		delete from xbh_newsType
+		where
+			id = #{id}
+	</delete>
+	
+	<delete id="deleteNewsTypeList" parameterType="map">
+		delete from xbh_newsType where id in
+		<foreach collection="id" item="id" open="(" close=")" separator=",">
+			#{id}
+		</foreach>
+	</delete>
+	
+	<select id="findNewsTypeInNews" parameterType="int" resultType="int">
+		select count(*) from xbh_news
+		where type = #{id}
+	</select>
+	
+	<select id="findNewsTypeByIds" parameterType="map" resultType="int">
+		select count(*) from xbh_news
+		where type in
+		<foreach collection="id" item="id" open="(" close=")" separator=",">
+			#{id}
+		</foreach>
+	</select>
+	
+	
+	
+</mapper>
